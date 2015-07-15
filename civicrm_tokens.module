@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Provides tokens for CiviCRM contact fields.
+ */
+
+
+/**
+ * Implements hook_token_info().
+ * Provide information about available placeholder tokens and token types.
+ */
+function civicrm_tokens_token_info() {
+  $info = array();
+
+  civicrm_initialize();
+
+  $params = array(
+    'version' => 3,
+    'sequential' => 1,
+  );
+  $result = civicrm_api('Contact', 'getfields', $params);
+
+  $tokens = array();
+  foreach ($result['values'] as $field) {
+    if ($field['export']) {
+      $tokens['civi_' . $field['name']] = array(
+        'name' => $field['title'],
+        'description' => $field['title'],
+      );
+    }
+  }
+
+  return array(
+    'tokens' => array('user' => $tokens),
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function civicrm_tokens_tokens($type, $tokens, $data = array(), $options = array()) {
+  $replacements = array();
+
+  if ($type == 'user') {
+    civicrm_initialize();
+    $account = $data['user'];
+
+    $api = new civicrm_api3();
+
+    // Fetch the contact_id
+    $params = array(
+      'uf_id' => $account->uid,
+    );
+
+    if ($api->UFMatch->GetSingle($params)) {
+      // Fetch the contact record.
+      $params = array(
+        'contact_id' => $api->contact_id,
+      );
+      if ($api->Contact->GetSingle($params)) {
+        $contact = (array) $api->result();
+      }
+    }
+
+    foreach ($tokens as $name => $original) {
+      $field = str_replace('civi_', '', $name);
+      if (array_key_exists($field, $contact)) {
+        $replacements[$original] = $contact[$field];
+      }
+      else {
+        $replacements[$original] = '';
+      }
+    }
+
+  }
+  return $replacements;
+}

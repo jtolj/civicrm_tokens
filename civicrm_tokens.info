@@ -1,0 +1,4 @@
+name        = CiviCRM Tokens
+description = "Enables tokens for CiviCRM fields on the user entity."
+core        = 7.x
+dependencies[] = civicrm
