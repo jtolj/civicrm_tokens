@@ -41,6 +41,7 @@ function civicrm_tokens_token_info() {
  */
 function civicrm_tokens_tokens($type, $tokens, $data = array(), $options = array()) {
   $replacements = array();
+  $sanitize = !empty($options['sanitize']);
 
   if ($type == 'user') {
     civicrm_initialize();
@@ -64,11 +65,13 @@ function civicrm_tokens_tokens($type, $tokens, $data = array(), $options = array
     }
 
     foreach ($tokens as $name => $original) {
-      $field = str_replace('civi_', '', $name);
-      if (array_key_exists($field, $contact)) {
-        $replacements[$original] = $contact[$field];
+      if (strpos($name, 'civi_') === 0) {
+        $field = str_replace('civi_', '', $name);
+        if (array_key_exists($field, $contact)) {
+          $replacements[$original] = ($sanitize) ? filter_xss($contact[$field]) : $contact[$field];
+        }
       }
-      else {
+      elseif ($options['clear']) {
         $replacements[$original] = '';
       }
     }
