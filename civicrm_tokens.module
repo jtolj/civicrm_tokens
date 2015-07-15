@@ -70,12 +70,13 @@ function civicrm_tokens_tokens($type, $tokens, $data = array(), $options = array
         if (array_key_exists($field, $contact)) {
           $replacements[$original] = ($sanitize) ? filter_xss($contact[$field]) : $contact[$field];
         }
-      }
-      elseif ($options['clear']) {
-        $replacements[$original] = '';
+        elseif ($options['clear']) {
+          $replacements[$original] = '';
+        }
       }
     }
 
   }
+  
   return $replacements;
 }
